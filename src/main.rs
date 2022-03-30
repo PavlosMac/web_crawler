@@ -3,10 +3,14 @@ use clap::Parser;
 use clap::{Arg};
 use std::env;
 use reqwest;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 use select::document::Document;
 use select::predicate::{Name, Predicate};
 use std::path::Path;
+use futures::{stream, StreamExt};
+use tokio::sync::Mutex;
+use std::sync::Arc;
+
 
 #[tokio::main]
 async fn main() {
@@ -16,8 +20,6 @@ async fn main() {
     let res = reqwest::get(url.as_ref()).await;
 
     let res = res.unwrap().text().await;
-    // println!("{}", res.status_code);
-    // println!("{}", res.http_version);
     let res = res.unwrap();
 
     let links: HashSet<String> = Document::from(res.as_str())
@@ -39,5 +41,31 @@ async fn main() {
         }
     }
 
-    println!("{:?}", new_list);
+    println!("{:?}", new_list.len());
+    // create an async concurrent stream that does not block the main thread
+    let c: Arc<Mutex<HashMap<String, String>>> = Arc::new(Mutex::new(HashMap::new()));
+    stream::iter(new_list.into_iter())
+        .for_each_concurrent(5, |url| {
+            let arc = c.clone();
+            async move {
+                let res = reqwest::get(&url).await;
+                match res {
+                    Ok(res) => {
+                        println!("Success! {}", &url);
+                        arc.lock().await.insert(url.to_string(), res.status().to_string());
+                    },
+                    _ => {
+                    panic!("Something unexpected happened.{}", res.unwrap().status());
+                    },
+                };
+            }})
+        .await;
+
+    let guard = c.lock().await.clone();
+
+    // println!("how many r's {}", guard.len());
+    //
+    // for (key,value) in &guard {
+    //     println!("{}: {}", key, value);
+    // }
 }
