@@ -1,23 +1,22 @@
 use super::errors::*;
-use super::errors::*;
 use super::HashMap;
-use futures::{stream, FutureExt, StreamExt, TryStreamExt};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use std::error::Error;
 use crate::errors::RError;
 
+/// take the domain links, spawn tasks to make requests, collect the urls with new format, appending status code or failed request
 pub async fn crawl(links: Vec<String>) -> Result<Vec<String>, RError> {
     let tasks: Vec<_> = links
         .into_iter()
         .map(|mut item| {
             tokio::spawn(async {
                 let res = resolve(&item).await;
-                item.push_str(" - ");
-                if res.is_ok() {
-                    item.push_str(&res.unwrap());
+                if let Ok(code) = &res {
+                    let f = format!(" -- {}", &code.as_str());
+                    item.push_str(f.as_str());
                 } else {
-                    item.push_str("Request failed.")
+                    item.push_str(" --- failed to index link");
                 }
                 item
             })
@@ -28,74 +27,65 @@ pub async fn crawl(links: Vec<String>) -> Result<Vec<String>, RError> {
     for task in tasks {
         items.push(task.await?);
     }
-    println!("{:?}", items);
     Ok(items)
 }
-
-async fn resolve(s: &str) -> Result<String, RError> {
-    let res = reqwest::get(s).await?;
-    Ok(res.status().to_string())
+/// resolve the http request to the domain, print to stderr if error
+async fn resolve(s: &str) -> Result<reqwest::StatusCode, RError> {
+    let res = reqwest::get(s).await;
+    return match res {
+        Ok(r) => Ok(r.status()),
+        Err(e) => {
+            eprintln!("{}",e);
+            Err(RError::InvalidHttpResponse("Bad request".to_owned()))
+        },
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
-    use std::str::FromStr;
+    use super::*;
+    use httpmock::prelude::*;
 
     macro_rules! aw {
         ($e:expr) => {
-            tokio_test::block_on($e)
-        };
+            tokio_test::block_on($e)};
     }
 
-    #[test]
-    fn test_check_link() {
+    /// test that N requests are made to mock http server, use blocking macro for async context
+    #[tokio::test]
+    async fn test_crawl() {
+        let mut urls = Vec::new();
+        urls.push(String::from("https://www.cloudsavvyit.com/10271/understanding-the-docker-build-context-why-you-should-use-dockerignore/"));
+        urls.push(String::from("https://docs.docker.com/storage/volumes/"));
+        urls.push(String::from("https://blog.sedrik.se/posts/my-docker-setup-for-rust/"));
+        urls.push(String::from("https://blog.sedrik.se/posts/my-docker-setup-for-rust/"));
+
+        let result = crawl(urls).await;
         let server = MockServer::start();
-        server.mock(|when, then| {
-            when.method(GET).path("/");
-            then.status(200).body("");
-        });
 
-        let mock1 = Url::from_str("https://blog.x5ff.xyz/blog/async-tests-tokio-rust/");
-        let mock2 = Url::from_str("https://blog.x5ff.xyz/blog/async-tests-tokio-rust/error");
-
-        assert_eq!(aw!(check_link(&mock1.unwrap())).unwrap(), true);
-        assert_eq!(aw!(check_link(&mock2.unwrap())).unwrap(), false);
-    }
-
-    #[test]
-    fn test_check_link_error() {
-        let server = MockServer::start();
-        server.mock(|when, then| {
-            when.method(GET).path("**/error");
-            then.status(400).body("");
-        });
-
-        let mock = Url::from_str("https://blog.x5ff.xyz/mockerror/error");
-
-        assert_eq!(aw!(check_link(&mock.unwrap())).unwrap(), false);
-    }
-
-    #[test]
-    fn test_handle_async_tasks() {
-        let mut urls = HashSet::new();
-
-        urls.insert(Url::from_str("https://blog.x5ff.xyz/blog/async-tests-tokio-rust/").unwrap());
-        urls.insert(Url::from_str("https://www.cloudsavvyit.com/10271/understanding-the-docker-build-context-why-you-should-use-dockerignore/").unwrap());
-        urls.insert(Url::from_str("https://docs.docker.com/storage/volumes/").unwrap());
-        urls.insert(
-            Url::from_str("https://blog.sedrik.se/posts/my-docker-setup-for-rust/").unwrap(),
-        );
-        urls.insert(
-            Url::from_str("https://blog.sedrik.se/posts/my-docker-setup-for-rust/").unwrap(),
-        );
-
-        let server = MockServer::start();
         server.mock(|when, then| {
             when.method(GET).path("");
-            then.status(200).body("");
+            then.status(200).body("<body>");
         });
 
-        assert_eq!(aw!(handle_async_tasks(urls)).unwrap().keys().len(), 4);
+        assert_eq!(result.unwrap().len(), 4);
     }
+
+    // #[tokio::test]
+    // async fn test_crawl_error() {
+    //     let mut urls = Vec::new();
+    //     urls.push(String::from("https://www.meh.com/10271/understanding-the-docker-build-context-why-you-should-use-dockerignore/"));
+    //
+    //     let result = crawl(urls).await;
+    //     println!("{:?}", result);
+    //     let server = MockServer::start();
+    //
+    //     server.mock(|when, then| {
+    //         when.method(GET).path("");
+    //         then.status(200).body("<body>");
+    //     });
+    //
+    //     assert_eq!(result.unwrap().len(), 1);
+    //     assert!(true);
+    // }
 }
