@@ -20,13 +20,12 @@ impl Domain {
         let origin = domain.host().unwrap();
         let mut u = String::from("https://");
         u.push_str(&origin.to_string());
-
         Ok(Self {
             base: u,
             indexables: Vec::new(),
         })
     }
-
+    ///
     pub async fn process_domain_links(&mut self) -> Result<(), RError> {
         let origin = self.base.clone();
         let formed = {
@@ -38,7 +37,11 @@ impl Domain {
                 origin
             }
         };
-        let res = reqwest::get(formed).await?.text().await?;
+        let client = reqwest::Client::new();
+        let res = reqwest::get(formed)
+            .await?
+            .text()
+            .await?;
         let links: HashSet<String> = Document::from(res.as_str())
             .find(Name("a"))
             .filter_map(|n| n.attr("href"))
