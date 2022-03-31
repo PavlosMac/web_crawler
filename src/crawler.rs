@@ -5,51 +5,9 @@ use futures::{stream, FutureExt, StreamExt, TryStreamExt};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use std::error::Error;
-use tokio::io::AsyncWriteExt;
-
-use std::{
-    io::{self, Write},
-    iter,
-};
-
 use crate::errors::RError;
 
-type Db = Arc<Mutex<HashMap<String, String>>>;
-
-#[derive(Debug)]
-pub struct Crawler {
-    pub(crate) results: Db,
-    pub(crate) link_count: usize,
-    links: Vec<String>,
-}
-
-
-// impl Crawler {
-// pub fn new(links: Vec<String>) -> Self {
-//     Self {
-//         links,
-//         link_count: 0,
-//         results: Arc::new(Mutex::new(HashMap::new())),
-//     }
-// }
-
-struct Req {
-    body: String,
-}
-
-impl Req {
-    async fn resolve(&self) -> Result<String, RError> {
-        let res = reqwest::get(self.body.clone()).await?;
-        Ok(res.status().to_string())
-        // match res {
-        //     Ok(r) => r.status().to_string(),
-        //     Err(e) => Err(RError::Reqwest)
-        // }
-    }
-}
-
-pub async fn crawl(links: Vec<String>) {
-
+pub async fn crawl(links: Vec<String>) -> Result<Vec<String>, RError> {
     let tasks: Vec<_> = links
         .into_iter()
         .map(|mut item| {
@@ -68,28 +26,16 @@ pub async fn crawl(links: Vec<String>) {
 
     let mut items = vec![];
     for task in tasks {
-        items.push(task.await.unwrap());
+        items.push(task.await?);
     }
     println!("{:?}", items);
+    Ok(items)
 }
 
 async fn resolve(s: &str) -> Result<String, RError> {
     let res = reqwest::get(s).await?;
     Ok(res.status().to_string())
 }
-//
-// async fn process_link(&mut self, url: &str) -> reqwest::StatusCode {
-//     let res = reqwest::get(url).await;
-//     match res {
-//         Ok(res) => {
-//             println!("Checking... {}", &url);
-//             return res.status();
-//         },
-//         Err(_) => panic!("Possible network error {}", res.unwrap().status()),
-//     };
-// }
-// }
-
 
 #[cfg(test)]
 mod tests {
