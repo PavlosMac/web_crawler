@@ -9,7 +9,7 @@ use chrono;
 
 pub fn save_file(data: Vec<String>, host: String) -> Result<(), RError> {
     let stamp = chrono::offset::Local::now().date();
-    let file_name = format!("{}-{}.txt", host, stamp);
+    let file_name = format!("./tmp/{}-{}.txt", host, stamp);
     let mut file = OpenOptions::new()
         .create_new(true)
         .write(true)
