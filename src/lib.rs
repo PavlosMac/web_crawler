@@ -1,5 +1,4 @@
 #![allow(unused)]
-use reqwest;
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::path::Path;

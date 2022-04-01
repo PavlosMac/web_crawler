@@ -2,8 +2,8 @@ use super::errors::*;
 use super::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-// use std::error::Error;
 use crate::errors::RError;
+// use super::info;
 
 /// take the domain links, spawn tasks to make requests, collect the urls with new format, appending status code or failed request
 pub async fn crawl(links: Vec<String>) -> Result<Vec<String>, RError> {
@@ -11,7 +11,6 @@ pub async fn crawl(links: Vec<String>) -> Result<Vec<String>, RError> {
         .into_iter()
         .map(|mut item| {
             tokio::spawn(async {
-                println!("requesting...{}", &item);
                 let res = resolve(&item).await;
                 if let Ok(code) = &res {
                     let f = format!(" -- {}", &code.as_str());
@@ -32,6 +31,7 @@ pub async fn crawl(links: Vec<String>) -> Result<Vec<String>, RError> {
 }
 /// resolve the http request to the domain, print to stderr if error
 async fn resolve(s: &str) -> Result<reqwest::StatusCode, RError> {
+    println!("Indexing.... {}", &s);
     let res = reqwest::get(s).await;
     return match res {
         Ok(r) => Ok(r.status()),
@@ -69,21 +69,4 @@ mod tests {
 
         assert_eq!(result.unwrap().len(), 2);
     }
-
-    // #[tokio::test]
-    // async fn test_crawl_error() {
-    //     let mut urls = Vec::new();
-    //     urls.push(String::from("https://www.cloudsavvyit.com/10271/understanding-the-docker-build-context-why-you-should-use-dockerignore/"));
-    //
-    //     let result = crawl(urls).await;
-    //     let server = MockServer::start();
-    //
-    //     server.mock(|when, then| {
-    //         when.method(GET).path("");
-    //         then.status(404).body("<body>");
-    //     });
-    //     let r = result.unwrap();
-    //     assert_eq!(r.len(), 1);
-    //     assert_eq!(r[0].contains("404"), true);
-    // }
 }

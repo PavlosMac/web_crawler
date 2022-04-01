@@ -6,6 +6,7 @@ use std::error::Error;
 use std::io::Write;
 use std::fs::OpenOptions;
 
+/// takes the list of indexed links, creates a new file and Buffer for writing
 pub fn save_file(data: Vec<String>, host: String) -> Result<(), RError> {
     let stamp = chrono::offset::Local::now().time();
     let file_name = format!("./tmp/{}-{}.txt", host, stamp);
@@ -18,10 +19,9 @@ pub fn save_file(data: Vec<String>, host: String) -> Result<(), RError> {
     write_to_file(data, writer)?;
     Ok(())
 }
-
+/// writes each entry of index list, writes count on new line
 fn write_to_file<T: Write>(data: Vec<String>, mut writer: T) -> Result<(), RError> {
     for d in data.iter() {
-        println!("writing... {}", d);
         let line = format!("{}\n", d);
         writer.write_all(line.as_bytes())?;
     }
