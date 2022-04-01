@@ -1,6 +1,6 @@
-# Async Web Crawler Implementation
+# Async Web Crawler
 
-Implementation of a subdomain crawler. This cli programme should:
+Implementation of a domain crawler. This cli programme should:
 * get all hosted links from single domain
 * check unique links for status code using concurrent tasks
 * save the results along with count to a file
@@ -8,8 +8,10 @@ Implementation of a subdomain crawler. This cli programme should:
 Env args:
 $arg = url
 
+
 Note:
-Requires `tmp` folder at project root.
+Requires `tmp` folder at project root for results file.
+
 
 Run programme:
 ```sh
@@ -21,10 +23,12 @@ Run tests:
 > cargo test
 ```
 
+
 Can be run from docker container with docker-compose. Replace the second entrypoint argument in /web_crawler/docker-compose.yml.
 
 With Docker:
 Change second entrypoint arg in yml file.
+
 
 `entrypoint: ["/web_crawler/target/release/crw", "https://example.org"]`
 
