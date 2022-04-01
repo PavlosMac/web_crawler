@@ -2210,6 +2210,7 @@ dependencies = [
  "chrono",
  "env_logger",
  "httpmock",
+ "log",
  "reqwest",
  "select",
  "thiserror",

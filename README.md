@@ -10,7 +10,7 @@ $arg = url
 
 Run programme:
 ```sh
-> cargo run https://www.example-web-page.com
+> RUST_LOG=info cargo run https://www.example-web-page.com
 ```
 
 Run tests:

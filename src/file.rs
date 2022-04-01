@@ -1,8 +1,5 @@
-use std::fs::File;
 use std::io::BufWriter;
-use std::path::Path;
 use crate::errors::RError;
-use std::error::Error;
 use std::io::Write;
 use std::fs::OpenOptions;
 
@@ -10,7 +7,7 @@ use std::fs::OpenOptions;
 pub fn save_file(data: Vec<String>, host: String) -> Result<(), RError> {
     let stamp = chrono::offset::Local::now().time();
     let file_name = format!("./tmp/{}-{}.txt", host, stamp);
-    let mut file = OpenOptions::new()
+    let file = OpenOptions::new()
         .create_new(true)
         .write(true)
         .open(file_name)?;

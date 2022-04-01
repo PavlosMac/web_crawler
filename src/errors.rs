@@ -3,7 +3,7 @@ use thiserror::Error;
 #[derive(Error, Debug, Clone)]
 pub enum RError {
     #[error("with protocol: <https://github.com>")]
-    ParseError,
+    ParseError(String),
     #[error("reqwest: {0}")]
     Reqwest(String),
     #[error("tokio join error: {0}")]
@@ -28,7 +28,7 @@ impl std::convert::From<tokio::task::JoinError> for RError {
 
 impl std::convert::From<url::ParseError> for RError {
     fn from(err: url::ParseError) -> Self {
-        RError::ParseError
+        RError::ParseError(err.to_string())
     }
 }
 

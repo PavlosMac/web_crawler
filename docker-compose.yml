@@ -1,10 +1,12 @@
 version: '3.8'
 
 services:
-  server:
+  crawler:
     build:
       context: .
       dockerfile: ./Dockerfile
     volumes:
       - ./tmp:/web_crawler/tmp
-    entrypoint: ["/web_crawler/target/release/crw", "https://doc.rust-lang.org"]
+    entrypoint: ["/web_crawler/target/release/crw", "https://stackoverflow.com/"]
+    environment:
+      - "RUST_LOG=info"

@@ -1,8 +1,7 @@
-use super::errors;
 use super::*;
 use select::{
     document::Document,
-    predicate::{Name, Predicate},
+    predicate::Name,
 };
 
 #[derive(Debug)]
@@ -103,7 +102,6 @@ mod tests {
         set.insert("/example/path".to_owned());
         set.insert("https://example-base.com".to_owned());
         let results = parse_links("example-base.com".to_owned(), set);
-        println!("my results are  ===> {:?}", results);
         let filtered = results
             .into_iter()
             .map(|s|  check_protocol(s))

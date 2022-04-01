@@ -1,9 +1,5 @@
-use super::errors::*;
-use super::HashMap;
-use std::sync::Arc;
-use tokio::sync::Mutex;
 use crate::errors::RError;
-// use super::info;
+use super::info;
 
 /// take the domain links, spawn tasks to make requests, collect the urls with new format, appending status code or failed request
 pub async fn crawl(links: Vec<String>) -> Result<Vec<String>, RError> {
@@ -27,11 +23,12 @@ pub async fn crawl(links: Vec<String>) -> Result<Vec<String>, RError> {
     for task in tasks {
         items.push(task.await?);
     }
+    info!("count: {}", &items.len());
     Ok(items)
 }
 /// resolve the http request to the domain, print to stderr if error
 async fn resolve(s: &str) -> Result<reqwest::StatusCode, RError> {
-    println!("Indexing.... {}", &s);
+    info!("Indexing.... {}", &s);
     let res = reqwest::get(s).await;
     return match res {
         Ok(r) => Ok(r.status()),
