@@ -5,10 +5,9 @@ use crate::errors::RError;
 use std::error::Error;
 use std::io::Write;
 use std::fs::OpenOptions;
-use chrono;
 
 pub fn save_file(data: Vec<String>, host: String) -> Result<(), RError> {
-    let stamp = chrono::offset::Local::now().date();
+    let stamp = chrono::offset::Local::now().time();
     let file_name = format!("./tmp/{}-{}.txt", host, stamp);
     let mut file = OpenOptions::new()
         .create_new(true)
@@ -24,10 +23,10 @@ fn write_to_file<T: Write>(data: Vec<String>, mut writer: T) -> Result<(), RErro
     for d in data.iter() {
         println!("writing... {}", d);
         let line = format!("{}\n", d);
-        writer.write(line.as_bytes())?;
+        writer.write_all(line.as_bytes())?;
     }
     let count = format!("\nindexed count: {}", data.len());
-    writer.write(count.as_bytes())?;
+    writer.write_all(count.as_bytes())?;
     Ok(())
 }
 
