@@ -8,6 +8,10 @@ edition = "2021"
 name = "crawler"
 path = "src/lib.rs"
 
+[[bin]]
+name = "crw"
+path = "src/main.rs"
+
 [dependencies]
 select = "0.4.3"
 tokio = { version = "1.17.0", features = ["full"] }

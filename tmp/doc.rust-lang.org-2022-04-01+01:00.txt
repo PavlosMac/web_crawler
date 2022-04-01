@@ -1,0 +1,25 @@
+https://doc.rust-lang.org/tools/install -- 404
+https://doc.rust-lang.org/ -- 200
+https://doc.rust-lang.org/rustdoc/index.html -- 200
+https://doc.rust-lang.org/policies/security -- 404
+https://doc.rust-lang.org/nomicon/index.html -- 200
+https://doc.rust-lang.org/error-index.html -- 200
+https://doc.rust-lang.org/rustc/index.html -- 200
+https://doc.rust-lang.org/policies/code-of-conduct -- 404
+https://doc.rust-lang.org/policies -- 404
+https://doc.rust-lang.org/learn -- 404
+https://doc.rust-lang.org/reference/index.html -- 200
+https://doc.rust-lang.org/book/ -- 200
+https://doc.rust-lang.org/edition-guide/index.html -- 200
+https://doc.rust-lang.org/policies/licenses -- 404
+https://doc.rust-lang.org/community -- 404
+https://doc.rust-lang.org/embedded-book -- 200
+https://doc.rust-lang.org/policies/media-guide -- 404
+https://doc.rust-lang.org/tools -- 404
+https://doc.rust-lang.org/stable/rust-by-example/ -- 200
+https://doc.rust-lang.org/cargo/index.html -- 200
+https://doc.rust-lang.org/governance -- 404
+https://doc.rust-lang.org/nightly/unstable-book/index.html -- 200
+https://doc.rust-lang.org/std/index.html -- 200
+
+indexed count: 23

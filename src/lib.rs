@@ -4,26 +4,24 @@ use std::collections::{HashMap, HashSet};
 use std::env;
 use std::path::Path;
 use url::{Host, Url};
-
-use std::sync::Arc;
-use tokio::sync::Mutex;
-
 mod crawler;
-// use crawler::*;
-
 mod domain;
 use domain::*;
-
 mod errors;
 use errors::*;
-type BoxResult<T> = Result<T, Box<dyn std::error::Error>>;
+mod file;
 
 #[tokio::main]
 pub async fn run() -> Result<(), RError> {
     let args: Vec<String> = env::args().collect();
-    let mut d = Domain::new(&args)?;
+    let mut arg_1 = args[1].clone();
+    let mut d = Domain::new(arg_1)?;
     d.process_domain_links().await?;
-    let findings = d.indexables;
-    let mut c = crawler::crawl(findings).await?;
+    let mut data = crawler::crawl(d.indexables).await?;
+    let handler = tokio::task::spawn_blocking(move || {
+        file::save_file(data, d.host);
+    });
+
+    handler.await?;
     Ok(())
 }

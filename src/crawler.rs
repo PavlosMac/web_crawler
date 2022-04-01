@@ -2,7 +2,7 @@ use super::errors::*;
 use super::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use std::error::Error;
+// use std::error::Error;
 use crate::errors::RError;
 
 /// take the domain links, spawn tasks to make requests, collect the urls with new format, appending status code or failed request
@@ -11,6 +11,7 @@ pub async fn crawl(links: Vec<String>) -> Result<Vec<String>, RError> {
         .into_iter()
         .map(|mut item| {
             tokio::spawn(async {
+                println!("requesting...{}", &item);
                 let res = resolve(&item).await;
                 if let Ok(code) = &res {
                     let f = format!(" -- {}", &code.as_str());
@@ -55,37 +56,34 @@ mod tests {
     #[tokio::test]
     async fn test_crawl() {
         let mut urls = Vec::new();
+        urls.push(String::from("https://www.meh.com/10271/understanding-the-docker-build-context-why-you-should-use-dockerignore/"));
         urls.push(String::from("https://www.cloudsavvyit.com/10271/understanding-the-docker-build-context-why-you-should-use-dockerignore/"));
-        urls.push(String::from("https://docs.docker.com/storage/volumes/"));
-        urls.push(String::from("https://blog.sedrik.se/posts/my-docker-setup-for-rust/"));
-        urls.push(String::from("https://blog.sedrik.se/posts/my-docker-setup-for-rust/"));
 
         let result = crawl(urls).await;
         let server = MockServer::start();
 
         server.mock(|when, then| {
-            when.method(GET).path("");
+            when.path("");
             then.status(200).body("<body>");
         });
 
-        assert_eq!(result.unwrap().len(), 4);
+        assert_eq!(result.unwrap().len(), 2);
     }
 
     // #[tokio::test]
     // async fn test_crawl_error() {
     //     let mut urls = Vec::new();
-    //     urls.push(String::from("https://www.meh.com/10271/understanding-the-docker-build-context-why-you-should-use-dockerignore/"));
+    //     urls.push(String::from("https://www.cloudsavvyit.com/10271/understanding-the-docker-build-context-why-you-should-use-dockerignore/"));
     //
     //     let result = crawl(urls).await;
-    //     println!("{:?}", result);
     //     let server = MockServer::start();
     //
     //     server.mock(|when, then| {
     //         when.method(GET).path("");
-    //         then.status(200).body("<body>");
+    //         then.status(404).body("<body>");
     //     });
-    //
-    //     assert_eq!(result.unwrap().len(), 1);
-    //     assert!(true);
+    //     let r = result.unwrap();
+    //     assert_eq!(r.len(), 1);
+    //     assert_eq!(r[0].contains("404"), true);
     // }
 }

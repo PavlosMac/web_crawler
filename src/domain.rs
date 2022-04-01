@@ -10,12 +10,13 @@ use select::{
 pub struct Domain {
     pub base: String,
     pub indexables: Vec<String>,
+    pub host: String,
 }
 
 const PROTOCOL: &str = "https://";
 
 impl Domain {
-    /// parse the input arg, create url request string and new struct - can unwrap host, because args has already been parsed
+    /// parse the input arg, create url request string and new struct - can unwrap host, because &input_arg has already been parsed
     pub fn new(input_arg: String) -> Result<Self, RError> {
         let domain = Url::parse(&input_arg)?;
         let origin = domain.host().unwrap();
@@ -24,6 +25,7 @@ impl Domain {
         Ok(Self {
             base: u,
             indexables: Vec::new(),
+            host: origin.to_string()
         })
     }
     /// request initial doc from domain, process href tags, return HashSet to ensure unique values
