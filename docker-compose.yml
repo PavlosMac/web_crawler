@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./tmp:/web_crawler/tmp
+    entrypoint: ["/web_crawler/target/release/crw", "https://doc.rust-lang.org/dsomtjing"]
