@@ -8,6 +8,9 @@ Implementation of a subdomain crawler. This cli programme should:
 Env args:
 $arg = url
 
+Note:
+Requires `tmp` folder at project root.
+
 Run programme:
 ```sh
 > RUST_LOG=info cargo run https://www.example-web-page.com
