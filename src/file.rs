@@ -2,30 +2,34 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 use crate::errors::RError;
+use std::error::Error;
 use std::io::Write;
+use std::fs::OpenOptions;
 use chrono;
 
-pub fn save_file(data: Vec<String>, path: String, domain: &str) -> Result<(), RError> {
+pub fn save_file(data: Vec<String>, host: String) -> Result<(), RError> {
     let stamp = chrono::offset::Local::now().date();
-    let new_file = File::create(Path::new(format!("{}/{}-{}.txt", path, domain, stamp).as_str()))?;
-    let writer = BufWriter::new(new_file);
+    let file_name = format!("{}-{}.txt", host, stamp);
+    let mut file = OpenOptions::new()
+        .create_new(true)
+        .write(true)
+        .open(file_name)?;
+
+    let writer = BufWriter::new(file);
     write_to_file(data, writer)?;
     Ok(())
 }
 
-fn write_to_file<T: Write>(
-    data: Vec<String>,
-    mut writer: T,
-) -> Result<(), RError> {
+fn write_to_file<T: Write>(data: Vec<String>, mut writer: T) -> Result<(), RError> {
     for d in data.iter() {
+        println!("writing... {}", d);
         let line = format!("{}\n", d);
-        writer.write_all(line.as_bytes())?;
+        writer.write(line.as_bytes())?;
     }
-    let totals = format!("\nindexed count: {}", data.len());
-    writer.write_all(totals.as_bytes())?;
+    let count = format!("\nindexed count: {}", data.len());
+    writer.write(count.as_bytes())?;
     Ok(())
 }
-
 
 #[cfg(test)]
 mod tests {
