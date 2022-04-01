@@ -6,7 +6,7 @@ Implementation of a subdomain crawler. This cli programme should:
 * save the results along with count to a file
 
 Env args:
-$arg = <url-to-crawl>
+$arg = url
 
 Run programme:
 ```sh
